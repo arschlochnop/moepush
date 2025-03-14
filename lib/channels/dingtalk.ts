@@ -74,7 +74,7 @@ export class DingTalkChannel extends BaseChannel {
   async sendMessage(
     message: DingTalkMessage,
     options: SendMessageOptions
-  ): Promise<Response> {
+  ): Promise<any> {
     try {
       const { webhook, secret } = options
       

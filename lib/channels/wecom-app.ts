@@ -51,7 +51,7 @@ export class WecomAppChannel extends BaseChannel {
   async sendMessage(
     message: WecomAppMessage,
     options: SendMessageOptions
-  ): Promise<Response> {
+  ): Promise<any> {
     const { corpId, agentId, secret } = options
     
     if (!corpId || !agentId || !secret) {

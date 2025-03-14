@@ -89,7 +89,7 @@ export class FeishuChannel extends BaseChannel {
         description: "支持丰富交互元素的卡片消息",
         fields: [
           { 
-            key: "content.card", 
+            key: "card", 
             description: "卡片内容(JSON格式), 具体格式请参考<a target='_blank' href='https://open.feishu.cn/document/ukTMukTMukTM/ugTNwUjL4UDM14CO1ATN'>飞书卡片文档</a>", 
             required: true, 
             component: 'textarea',

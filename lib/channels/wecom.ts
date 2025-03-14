@@ -61,7 +61,7 @@ export class WecomChannel extends BaseChannel {
   async sendMessage(
     message: WecomMessage,
     options: SendMessageOptions
-  ): Promise<Response> {
+  ): Promise<any> {
     const { webhook } = options
     
     if (!webhook) {

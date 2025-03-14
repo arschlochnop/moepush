@@ -73,7 +73,7 @@ export class TelegramChannel extends BaseChannel {
   async sendMessage(
     message: TelegramMessage,
     options: SendMessageOptions
-  ): Promise<Response> {
+  ): Promise<any> {
     const { botToken, chatId } = options
     
     if (!botToken || !chatId) {
