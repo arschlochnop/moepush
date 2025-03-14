@@ -52,9 +52,9 @@ export async function POST(
       }
     )
 
-    console.log('response:', response)
+    console.log('response:', JSON.stringify(response))
 
-    return new Response(JSON.stringify({ message: JSON.stringify(response) }), { status: 200 })
+    return new Response(JSON.stringify({ message: response }), { status: 200 })
 
   } catch (error) {
     console.error("Push error:", error)
