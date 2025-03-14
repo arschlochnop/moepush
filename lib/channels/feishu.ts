@@ -1,7 +1,7 @@
 import { BaseChannel, ChannelConfig, SendMessageOptions } from "./base"
 
 interface FeishuMessage {
-  msg_type: "text" | "post"
+  msg_type: "text" | "post" | "interactive"
   content: {
     text?: string
     post?: {
@@ -82,6 +82,55 @@ export class FeishuChannel extends BaseChannel {
           },
           { key: "msg_type", component: 'hidden', defaultValue: "post" },
         ],
+      },
+      {
+        type: "interactive",
+        name: "交互式卡片",
+        description: "支持丰富交互元素的卡片消息",
+        fields: [
+          { 
+            key: "content.card", 
+            description: "卡片内容(JSON格式), 具体格式请参考<a target='_blank' href='https://open.feishu.cn/document/ukTMukTMukTM/ugTNwUjL4UDM14CO1ATN'>飞书卡片文档</a>", 
+            required: true, 
+            component: 'textarea',
+            placeholder: JSON.stringify({
+              "config": {
+                "wide_screen_mode": true
+              },
+              "elements": [
+                {
+                  "tag": "div",
+                  "text": {
+                    "content": "这是一个交互式卡片示例",
+                    "tag": "lark_md"
+                  }
+                },
+                {
+                  "tag": "action",
+                  "actions": [
+                    {
+                      "tag": "button",
+                      "text": {
+                        "tag": "plain_text",
+                        "content": "查看详情"
+                      },
+                      "url": "https://example.com",
+                      "type": "default"
+                    }
+                  ]
+                }
+              ],
+              "header": {
+                "title": {
+                  "content": "通知标题",
+                  "tag": "plain_text"
+                },
+                "template": "blue"
+              }
+            }, null, 2)
+          },
+          { key: "msg_type", component: 'hidden', defaultValue: "interactive" },
+        ],
       }
     ]
   }
@@ -110,6 +159,15 @@ export class FeishuChannel extends BaseChannel {
         message.content.post.zh_cn.content = JSON.parse(message.content.post.zh_cn.content as any);
       } catch {
         throw new Error("富文本内容格式不正确，请提供有效的JSON格式");
+      }
+    }
+    
+    // 处理交互式卡片消息的内容格式
+    if (message.msg_type === "interactive" && typeof message.content.card === 'string') {
+      try {
+        message.content.card = JSON.parse(message.content.card);
+      } catch {
+        throw new Error("交互式卡片内容格式不正确，请提供有效的JSON格式");
       }
     }
 
