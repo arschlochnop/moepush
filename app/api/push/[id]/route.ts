@@ -39,7 +39,7 @@ export async function POST(
 
     const messageObj = JSON.parse(processedTemplate)
 
-    await sendChannelMessage(
+    const response = await sendChannelMessage(
       endpoint.channel.type as any,
       messageObj,
       {
@@ -52,7 +52,9 @@ export async function POST(
       }
     )
 
-    return new Response(JSON.stringify({ message: "推送成功" }), { status: 200 })
+    console.log('response:', response)
+
+    return new Response(JSON.stringify({ message: JSON.stringify(response) }), { status: 200 })
 
   } catch (error) {
     console.error("Push error:", error)
