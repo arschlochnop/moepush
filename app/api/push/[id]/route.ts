@@ -52,10 +52,10 @@ export async function POST(
       }
     )
 
-    console.log('route response:', JSON.stringify(response))
+    console.log('route response:', JSON.stringify(response.json()))
 
-    return new Response(JSON.stringify({ message: response }), { status: 200 })
-
+    return new Response(JSON.stringify({ message: JSON.stringify(response.json()) }), { status: 200 })
+    
   } catch (error) {
     console.error("Push error:", error)
     return new Response(

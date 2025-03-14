@@ -16,6 +16,7 @@ interface FeishuMessage {
     }
     card?: any
   }
+  card?: any
   timestamp?: string
   sign?: string
 }
@@ -86,7 +87,7 @@ export class FeishuChannel extends BaseChannel {
       {
         type: "interactive",
         name: "交互式卡片",
-        description: "支持丰富交互元素的卡片消息",
+        description: "支持丰富布局和交互元素的卡片消息",
         fields: [
           { 
             key: "card", 
@@ -97,37 +98,24 @@ export class FeishuChannel extends BaseChannel {
               "config": {
                 "wide_screen_mode": true
               },
+              "header": {
+                "title": {
+                  "tag": "plain_text",
+                  "content": "项目有更新"
+                },
+                "template": "red"
+              },
               "elements": [
+                // 简化的示例元素
                 {
                   "tag": "div",
                   "text": {
-                    "content": "这是一个交互式卡片示例",
-                    "tag": "lark_md"
+                    "tag": "lark_md",
+                    "content": "**项目有更新**: [请查看](https://example.com)"
                   }
-                },
-                {
-                  "tag": "action",
-                  "actions": [
-                    {
-                      "tag": "button",
-                      "text": {
-                        "tag": "plain_text",
-                        "content": "查看详情"
-                      },
-                      "url": "https://example.com",
-                      "type": "default"
-                    }
-                  ]
                 }
-              ],
-              "header": {
-                "title": {
-                  "content": "通知标题",
-                  "tag": "plain_text"
-                },
-                "template": "blue"
-              }
-            }, null, 2)
+              ]
+            }, null, 2),
           },
           { key: "msg_type", component: 'hidden', defaultValue: "interactive" },
         ],
@@ -162,12 +150,12 @@ export class FeishuChannel extends BaseChannel {
       }
     }
     
-    // 处理交互式卡片消息的内容格式
-    if (message.msg_type === "interactive" && typeof message.content.card === 'string') {
+    // 处理交互式卡片消息
+    if (message.msg_type === "interactive" && typeof message.card === 'string') {
       try {
-        message.content.card = JSON.parse(message.content.card);
+        message.card = JSON.parse(message.card);
       } catch {
-        throw new Error("交互式卡片内容格式不正确，请提供有效的JSON格式");
+        throw new Error("卡片内容格式不正确，请提供有效的JSON格式");
       }
     }
 
@@ -193,13 +181,6 @@ export class FeishuChannel extends BaseChannel {
       throw new Error(`飞书消息推送失败: ${data.msg}`)
     }
 
-    // 解析响应并返回数据对象
-    const responseData = await response.json();
-    console.log('飞书sendMessage responseData:', JSON.stringify(responseData))
-    return {
-      status: response.status,
-      statusText: response.statusText,
-      data: responseData
-    };
+    return response
   }
 } 
