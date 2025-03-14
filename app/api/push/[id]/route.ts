@@ -51,11 +51,11 @@ export async function POST(
         chatId: endpoint.channel.chatId,
       }
     )
+    const res = await response.json()
+    console.log('route response:', JSON.stringify(res))
 
-    console.log('route response:', JSON.stringify(response.json()))
+    return new Response(JSON.stringify({ message: JSON.stringify(res) }), { status: 200 })
 
-    return new Response(JSON.stringify({ message: JSON.stringify(response.json()) }), { status: 200 })
-    
   } catch (error) {
     console.error("Push error:", error)
     return new Response(
