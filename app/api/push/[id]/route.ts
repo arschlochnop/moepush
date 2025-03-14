@@ -52,7 +52,7 @@ export async function POST(
       }
     )
 
-    console.log('response:', JSON.stringify(response))
+    console.log('route response:', JSON.stringify(response))
 
     return new Response(JSON.stringify({ message: response }), { status: 200 })
 

@@ -146,7 +146,7 @@ export class FeishuChannel extends BaseChannel {
   async sendMessage(
     message: FeishuMessage,
     options: SendMessageOptions
-  ): Promise<Response> {
+  ): Promise<any> {
     const { webhook, secret } = options
     
     if (!webhook) {
@@ -193,6 +193,13 @@ export class FeishuChannel extends BaseChannel {
       throw new Error(`飞书消息推送失败: ${data.msg}`)
     }
 
-    return response
+    // 解析响应并返回数据对象
+    const responseData = await response.json();
+    console.log('飞书sendMessage responseData:', JSON.stringify(responseData))
+    return {
+      status: response.status,
+      statusText: response.statusText,
+      data: responseData
+    };
   }
 } 

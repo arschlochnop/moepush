@@ -56,7 +56,9 @@ export async function sendChannelMessage(
   options: any
 ): Promise<Response> {
   const channel = getChannel(type)
-  return channel.sendMessage(message, options)
+  const res = await channel.sendMessage(message, options)
+  console.log('sendChannelMessage res:', JSON.stringify(res))
+  return res
 }
 
 // 导出渠道接口
