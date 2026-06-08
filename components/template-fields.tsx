@@ -10,6 +10,13 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { ChevronDown, ChevronUp } from "lucide-react"
 import { UseFormReturn } from "react-hook-form"
 import { MessageTemplate, TemplateField } from "@/lib/channels/base"
@@ -46,6 +53,24 @@ function FieldComponent({
           checked={value || false}
           onCheckedChange={onChange}
         />
+      )
+    case 'select':
+      return (
+        <Select
+          value={value || field.options?.[0]?.value || ''}
+          onValueChange={onChange}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={field.placeholder || `请选择${field.description}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {field.options?.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )
     case 'hidden':
       return null

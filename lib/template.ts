@@ -6,16 +6,37 @@ const BUILT_IN_FUNCTIONS = {
     return str.slice(0, maxLength) + '...'
   },
   
-  // 获取当前时间,支持自定义格式
-  now: (format = 'YYYY-MM-DD HH:mm:ss') => {
+  // 获取当前时间,支持自定义格式和时区偏移量
+  now: (format = 'YYYY-MM-DD HH:mm:ss', timezone?: number | string) => {
     const date = new Date()
+    
+    // 处理时区
+    let targetDate = date
+    if (timezone !== undefined) {
+      try {
+        if (typeof timezone === 'number') {
+          // 使用数字形式的时区偏移（小时）
+          const localOffset = date.getTimezoneOffset()
+          const targetOffset = timezone * 60 // 转换为分钟
+          const diffOffset = targetOffset + localOffset
+          targetDate = new Date(date.getTime() + diffOffset * 60 * 1000)
+        } else {
+          // 保持对字符串时区的支持
+          const dateStr = date.toLocaleString('en-US', { timeZone: timezone })
+          targetDate = new Date(dateStr)
+        }
+      } catch {
+        console.warn(`时区设置无效: ${timezone}, 将使用本地时区`)
+      }
+    }
+    
     const tokens: Record<string, () => string> = {
-      YYYY: () => date.getFullYear().toString(),
-      MM: () => (date.getMonth() + 1).toString().padStart(2, '0'),
-      DD: () => date.getDate().toString().padStart(2, '0'),
-      HH: () => date.getHours().toString().padStart(2, '0'),
-      mm: () => date.getMinutes().toString().padStart(2, '0'),
-      ss: () => date.getSeconds().toString().padStart(2, '0')
+      YYYY: () => targetDate.getFullYear().toString(),
+      MM: () => (targetDate.getMonth() + 1).toString().padStart(2, '0'),
+      DD: () => targetDate.getDate().toString().padStart(2, '0'),
+      HH: () => targetDate.getHours().toString().padStart(2, '0'),
+      mm: () => targetDate.getMinutes().toString().padStart(2, '0'),
+      ss: () => targetDate.getSeconds().toString().padStart(2, '0')
     }
     
     return format.replace(/YYYY|MM|DD|HH|mm|ss/g, match => tokens[match]())

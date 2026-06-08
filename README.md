@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/logo.png" alt="MoePush Logo" width="100" height="100">
+  <img src="public/moe_logo.png" alt="MoePush Logo" width="100" height="100">
   <h1 align="center">MoePush</h1>
 </p>
 
@@ -24,6 +24,7 @@
 - 💖**开源免费** ：基础功能完全免费使用，代码开源，欢迎贡献。
 - 🎨**精美 UI** ：使用 shadcn/ui 组件库，提供精美 UI 设计。
 - 🚀**快速部署** ：基于 [Cloudflare Pages](https://pages.cloudflare.com/) 部署，免费且稳定。
+- 📦**接口组功能** ：支持创建接口组，一次性推送消息到多个渠道接口。
 
 ## 已支持渠道
 
@@ -32,6 +33,9 @@
 - 企业微信群机器人
 - Telegram 机器人
 - 飞书群机器人
+- Discord Webhook
+- Bark App
+- 通用 Webhook
 
 ## 技术栈
 - **框架**: [Next.js](https://nextjs.org/) (App Router)
@@ -64,9 +68,19 @@ cp .env.example .env
 - `AUTH_SECRET`：加密 Session 的密钥
 - `AUTH_GITHUB_ID`：GitHub OAuth App ID
 - `AUTH_GITHUB_SECRET`：GitHub OAuth App Secret
-- `DISABLE_REGISTER`：是否禁止注册，默认关闭，设置为 `true` 则禁止注册
+- `DISABLE_REGISTER`：是否禁止注册，默认为`false`，设置为 `true` 则禁止注册
 
-3. 运行开发服务器：
+3. 创建 wrangler.json 文件
+```bash
+cp wrangler.example.json wrangler.json
+```
+
+4. 初始化本地数据库
+```bash
+pnpm run db:migrate-local
+```
+
+5. 运行开发服务器：
 
 ```bash
 pnpm run dev
@@ -75,6 +89,9 @@ pnpm run dev
 访问 http://localhost:3000 查看应用。
 
 ## 部署
+
+### 视频版保姆级部署教程
+https://www.bilibili.com/video/BV1dtZBYnEUX/?p=2
 
 ### GitHub Actions 自动部署
 
@@ -93,14 +110,36 @@ pnpm run dev
 - `PROJECT_NAME`：项目名称 (可选，默认：moepush)
 - `DISABLE_REGISTER`：是否禁止注册，默认关闭，设置为 `true` 则禁止注册
 
+### 使用 Docker 部署
+
+```bash
+docker pull beilunyang/moepush
+docker run -d -p 3000:3000 -v $(pwd)/.wrangler:/app/.wrangler -e AUTH_SECRET=<你的AUTH_SECRET> -e AUTH_GITHUB_ID=<你的AUTH_GITHUB_ID> -e AUTH_GITHUB_SECRET=<你的AUTH_GITHUB_SECRET> moepush
+```
+
 ## 贡献
 
 欢迎提交 Pull Request 或者 Issue来帮助改进这个项目
 
-## 交流群
-<img src="https://pic.otaku.ren/20250221/AQAD8b8xG9vVwFV-.jpg" style="width: 400px;"/>
-<br />
-如二维码失效，请添加我的个人微信（hansenones），并备注 "MoePush" 加入微信交流群
+## 交流
+<table>
+  <tr style="max-width: 360px">
+    <td>
+      <img src="https://pic.otaku.ren/20250309/AQADAcQxGxQjaVZ-.jpg" />
+    </td>
+    <td>
+      <img src="https://pic.otaku.ren/20250309/AQADCMQxGxQjaVZ-.jpg" />
+    </td>
+  </tr>
+  <tr style="max-width: 360px">
+    <td>
+      关注公众号，了解更多项目进展以及AI，区块链，独立开发资讯
+    </td>
+    <td>
+      添加微信，备注 "MoePush" 拉你进微信交流群
+    </td>
+  </tr>
+</table>
 
 ## 支持
 

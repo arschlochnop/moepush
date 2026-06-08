@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, MessageSquare, Zap, Shield, Heart, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { UserNav } from "@/components/user-nav";
+import { SiteHeader } from "@/components/site-header";
 
 export const runtime = "edge";
 
@@ -11,40 +11,7 @@ export default async function Home() {
 
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-b from-blue-50 to-indigo-50">
-      <header className="sticky top-0 z-50 w-full border-b border-blue-100 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 ">
-        <div className="container flex h-14 items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-2">
-              <Sparkles className="h-6 w-6 text-blue-500 animate-pulse" />
-              <span className="font-bold bg-gradient-to-r from-blue-500 to-indigo-500 text-transparent bg-clip-text">
-                MoePush
-              </span>
-            </Link>
-          </div>
-          <div className="flex items-center space-x-6">
-            <Link
-              href="https://github.com/beilunyang/moepush"
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm font-medium text-gray-600 hover:text-blue-500 transition-colors"
-            >
-              GitHub
-            </Link>
-            {session?.user ? (
-              <UserNav user={session.user} />
-            ) : (
-              <div className="flex gap-4">
-                <Link href="/login">
-                  <Button variant="ghost">登录</Button>
-                </Link>
-                <Link href="/register">
-                  <Button>注册</Button>
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <SiteHeader user={session?.user} variant="home" />
 
       <main className="flex-1">
         <section className="relative overflow-hidden min-h-screen flex items-center">

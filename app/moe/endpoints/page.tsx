@@ -1,11 +1,10 @@
 import { auth } from "@/lib/auth"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { EndpointTable } from "@/components/endpoint-table"
 import { getDb } from "@/lib/db"
 import { endpoints } from "@/lib/db/schema/endpoints"
 import { channels } from "@/lib/db/schema/channels"
 import { eq } from "drizzle-orm"
 import { Channel } from "@/lib/channels"
+import { EndpointsTabs } from "@/components/endpoints-tabs"
 
 export const runtime = "edge"
 
@@ -44,20 +43,10 @@ export default async function EndpointsPage() {
         </p>
       </div>
 
-      <Card className="bg-white/50 border-blue-100">
-        <CardHeader>
-          <CardTitle>推送接口</CardTitle>
-          <CardDescription>
-            管理所有的推送接口
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <EndpointTable 
-            endpoints={endpointList} 
-            channels={channelList as Channel[]}
-          />
-        </CardContent>
-      </Card>
+      <EndpointsTabs 
+        initialEndpoints={endpointList}
+        channels={channelList as Channel[]} 
+      />
     </div>
   )
 } 

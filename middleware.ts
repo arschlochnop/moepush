@@ -5,7 +5,28 @@ import type { NextRequest } from "next/server"
 export async function middleware(request: NextRequest) {
   const session = await auth()
   
-  // 需要保护的路由
+  // 需要保护的 API 路由
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    // 检查是否是需要保护的 API 端点
+    const protectedApis = [
+      "/api/channels",
+      "/api/endpoint-groups",
+      "/api/endpoints"
+    ]
+    
+    const isProtectedApi = protectedApis.some(api => 
+      request.nextUrl.pathname.startsWith(api)
+    )
+
+    if (isProtectedApi && !session) {
+      return NextResponse.json(
+        { error: "未授权访问" },
+        { status: 401 }
+      )
+    }
+  }
+
+  // 需要保护的页面路由
   if (request.nextUrl.pathname.startsWith("/moe")) {
     if (!session) {
       const loginUrl = new URL("/login", request.url)
@@ -23,5 +44,14 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/moe/:path*", "/login", "/register"]
+  matcher: [
+    // API 路由
+    "/api/channels/:path*",
+    "/api/endpoint-groups/:path*", 
+    "/api/endpoints/:path*",
+    // 页面路由
+    "/moe/:path*",
+    "/login",
+    "/register"
+  ]
 } 

@@ -26,10 +26,11 @@ const FUNCTIONS = [
   },
   {
     name: "now",
-    description: "获取当前时间",
-    example: "${now('YYYY-MM-DD HH:mm:ss')}",
+    description: "获取当前时间，支持自定义格式和时区",
+    example: "${now('YYYY-MM-DD HH:mm:ss', 8)}",
     args: [
-      { name: "format", description: "时间格式,可选"}
+      { name: "format", description: "时间格式，支持：YYYY(年)、MM(月)、DD(日)、HH(时)、mm(分)、ss(秒)，默认：YYYY-MM-DD HH:mm:ss" },
+      { name: "timezone", description: "时区设置，支持数字(如：8表示东八区,-5表示西五区)或时区名(如：Asia/Shanghai)，可选" }
     ]
   }
 ]
@@ -96,7 +97,7 @@ export function FunctionSelector({ onSelect }: FunctionSelectorProps) {
           <TabsContent value="functions" className="mt-2">
             <div className="space-y-2">
               <h4 className="font-medium">可用函数：</h4>
-              <div className="grid gap-2">
+              <div className="grid gap-2 max-h-[400px] overflow-y-auto pr-1">
                 {FUNCTIONS.map((fn) => (
                   <Button
                     key={fn.name}
@@ -113,14 +114,13 @@ export function FunctionSelector({ onSelect }: FunctionSelectorProps) {
                         {fn.description}
                       </span>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1 font-normal">
+                    <div className="text-xs text-muted-foreground mt-1 font-normal break-words">
                       参数：
-                      {fn.args.map((arg, i) => (
-                        <span key={arg.name}>
-                          {i > 0 && "、"}
-                          {arg.name}
-                          ：{arg.description}
-                        </span>
+                      {fn.args.map((arg) => (
+                        <div key={arg.name} className="ml-2 mt-1">
+                          <span className="font-medium">{arg.name}</span>
+                          <span>：{arg.description}</span>
+                        </div>
                       ))}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 font-normal break-words whitespace-pre-wrap">

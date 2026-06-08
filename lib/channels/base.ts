@@ -5,6 +5,7 @@ export interface TemplateField {
   required?: boolean
   component?: 'input' | 'textarea' | 'checkbox' | 'select' | 'hidden'
   defaultValue?: string
+  options?: Array<{value: string, label: string}>
 }
 
 export interface MessageTemplate {

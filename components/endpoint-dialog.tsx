@@ -37,7 +37,6 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Channel, ChannelType } from "@/lib/channels"
 import { CHANNEL_TEMPLATES } from "@/lib/channels"
 import { TemplateFields } from "@/components/template-fields"
-import { useRouter } from "next/navigation"
 import { createEndpoint, updateEndpoint } from "@/lib/services/endpoints"
 
 interface EndpointDialogProps {
@@ -45,6 +44,7 @@ interface EndpointDialogProps {
   endpoint?: Endpoint
   channels: Channel[]
   icon?: React.ReactNode
+  onSuccess?: () => void
 }
 
 
@@ -67,6 +67,7 @@ export function EndpointDialog({
   endpoint,
   channels,
   icon,
+  onSuccess,
 }: EndpointDialogProps) {
   const [open, setOpen] = useState(false)
   const [isPending, setIsPending] = useState(false)
@@ -77,7 +78,6 @@ export function EndpointDialog({
     getInitialTemplateType(endpoint)
   )
   const { toast } = useToast()
-  const router = useRouter()
 
   const form = useForm<NewEndpoint>({
     resolver: zodResolver(insertEndpointSchema),
@@ -103,7 +103,7 @@ export function EndpointDialog({
       }
       setOpen(false)
       form.reset()
-      router.refresh()
+      onSuccess?.()
     } catch (error) {
       console.error('Endpoint dialog error:', error)
       toast({

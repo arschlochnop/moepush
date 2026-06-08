@@ -67,4 +67,13 @@ export async function testEndpoint(id: string, rule: string) {
   }
 
   return res.json()
+}
+
+export async function getEndpoints() {
+  const response = await fetch(API_URL)
+  if (!response.ok) {
+    const error = await response.json() as { error: string }
+    throw new Error(error.error || '获取接口失败')
+  }
+  return response.json()
 }   

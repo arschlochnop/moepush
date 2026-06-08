@@ -57,7 +57,7 @@ export const insertChannelSchema = createInsertSchema(channels).extend({
   message: "企业微信应用必须提供应用Secret",
   path: ["secret"],
 }).refine((data) => {
-  if (![CHANNEL_TYPES.WECOM_APP, CHANNEL_TYPES.TELEGRAM, CHANNEL_TYPES.FEISHU].includes(data.type as any)) {
+  if (![CHANNEL_TYPES.WECOM_APP, CHANNEL_TYPES.TELEGRAM, CHANNEL_TYPES.FEISHU, CHANNEL_TYPES.BARK, CHANNEL_TYPES.WEBHOOK].includes(data.type as any)) {
     if (!data.webhook) return false
     try {
       new URL(data.webhook)
@@ -69,6 +69,20 @@ export const insertChannelSchema = createInsertSchema(channels).extend({
   return true
 }, {
   message: "请输入有效的 Webhook 地址",
+  path: ["webhook"],
+}).refine((data) => {
+  if (data.type === CHANNEL_TYPES.WEBHOOK) {
+    if (!data.webhook) return false
+    try {
+      new URL(data.webhook)
+      return true
+    } catch {
+      return false
+    }
+  }
+  return true
+}, {
+  message: "通用 Webhook 必须提供有效的 URL 地址",
   path: ["webhook"],
 }).refine((data) => {
   if (data.type === CHANNEL_TYPES.FEISHU) {
@@ -83,6 +97,20 @@ export const insertChannelSchema = createInsertSchema(channels).extend({
   return true
 }, {
   message: "飞书机器人必须提供有效的 Webhook 地址",
+  path: ["webhook"],
+}).refine((data) => {
+  if (data.type === CHANNEL_TYPES.BARK) {
+    if (!data.webhook) return false
+    try {
+      new URL(data.webhook)
+      return true
+    } catch {
+      return false
+    }
+  }
+  return true
+}, {
+  message: "Bark 必须提供有效的服务器地址",
   path: ["webhook"],
 }).refine((data) => {
   if (data.type === CHANNEL_TYPES.TELEGRAM) {

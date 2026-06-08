@@ -50,6 +50,34 @@
       "when": 1739894789187,
       "tag": "0006_tiny_paper_doll",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1742715412608,
+      "tag": "0007_regular_justice",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1742724893245,
+      "tag": "0008_productive_matthew_murdock",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1742730263788,
+      "tag": "0009_overconfident_proemial_gods",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1742735902244,
+      "tag": "0010_skinny_nitro",
+      "breakpoints": true
     }
   ]
 }

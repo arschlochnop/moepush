@@ -14,7 +14,7 @@ jobs:
       
       - uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 9
       
       - uses: actions/setup-node@v4
         with:
@@ -22,7 +22,7 @@ jobs:
           cache: 'pnpm'
           
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Install Wrangler
         run: pnpm i -g wrangler
