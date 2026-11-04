@@ -25,6 +25,8 @@ export const {
         },
         providers: [
             GithubProvider({
+                // 与 GitHub 回调的签发方保持一致，避免旧版 Auth.js 使用默认占位地址。
+                issuer: "https://github.com/login/oauth",
                 clientId: process.env.AUTH_GITHUB_ID!,
                 clientSecret: process.env.AUTH_GITHUB_SECRET!,
             }),
