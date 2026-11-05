@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -18,9 +18,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ChevronDown, ChevronUp } from "lucide-react"
-import { UseFormReturn } from "react-hook-form"
+import { UseFormReturn, useWatch } from "react-hook-form"
 import { MessageTemplate, TemplateField } from "@/lib/channels/base"
-import { getNestedValue, setNestedValue } from "@/lib/utils"
+import { formatTemplateValue, getTemplateFieldValue, parseEndpointRule, updateTemplateField } from "@/lib/endpoint-template"
 import { FunctionSelector } from "@/components/function-selector"
 
 interface TemplateFieldsProps {
@@ -41,7 +41,7 @@ function FieldComponent({
     case 'textarea':
       return (
         <Textarea
-          value={value || ''}
+          value={formatTemplateValue(value)}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder || `请输入${field.description}`}
           className="resize-none"
@@ -50,14 +50,14 @@ function FieldComponent({
     case 'checkbox':
       return (
         <Checkbox
-          checked={value || false}
+          checked={value ?? false}
           onCheckedChange={onChange}
         />
       )
     case 'select':
       return (
         <Select
-          value={value || field.options?.[0]?.value || ''}
+          value={formatTemplateValue(value)}
           onValueChange={onChange}
         >
           <SelectTrigger>
@@ -77,7 +77,7 @@ function FieldComponent({
     default:
       return (
         <Input
-          value={value || ''}
+          value={formatTemplateValue(value)}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder || `请输入${field.description}`}
         />
@@ -92,58 +92,25 @@ function isVariableSupported(field: TemplateField) {
 }
 
 export function TemplateFields({ form, template }: TemplateFieldsProps) {
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const [prevType, setPrevType] = useState(template.type)
-  const [fieldValues, setFieldValues] = useState<Record<string, any>>(() => {
-    try {
-      const rule = JSON.parse(form.getValues("rule") || "{}")
-      const flattenedValues: Record<string, any> = {}
-      template.fields.forEach(field => {
-        if (field.component === 'hidden' && field.defaultValue !== undefined) {
-          flattenedValues[field.key] = field.defaultValue
-        } else {
-          const value = getNestedValue(rule, field.key)
-          if (value !== undefined) {
-            flattenedValues[field.key] = value
-          }
-        }
-      })
-      return flattenedValues
-    } catch {
-      return {}
-    }
-  })
-
+  const ruleValue = useWatch({ control: form.control, name: "rule" }) || "{}"
+  let rule: Record<string, any>
+  try {
+    rule = parseEndpointRule(ruleValue)
+  } catch {
+    rule = {}
+  }
   const requiredFields = template.fields.filter(field => field.required)
   const optionalFields = template.fields.filter(field => !field.required && field.component !== 'hidden')
+  const [showAdvanced, setShowAdvanced] = useState(() =>
+    optionalFields.some(field => getTemplateFieldValue(rule, field.key) !== undefined)
+  )
 
-  useEffect(() => {
-    if (prevType !== template.type) {
-      const newFieldValues: Record<string, any> = {}
-      template.fields.forEach(field => {
-        if (fieldValues[field.key] !== undefined) {
-          newFieldValues[field.key] = fieldValues[field.key]
-        }
-      })
-      setFieldValues(newFieldValues)
-      setPrevType(template.type)
-    }
-  }, [template.type, prevType, fieldValues, template.fields])
-
-  useEffect(() => {
-    const processedValues: Record<string, any> = {}
-    Object.entries(fieldValues).forEach(([key, value]) => {
-      if (key.includes('.')) {
-        setNestedValue(processedValues, key, value)
-      } else {
-        processedValues[key] = value
-      }
+  const changeField = (key: string, value: any) => {
+    form.setValue("rule", updateTemplateField(form.getValues("rule") || "{}", key, value), {
+      shouldDirty: true,
+      shouldValidate: true,
     })
-
-    const jsonString = JSON.stringify(processedValues, null, 2)
-
-    form.setValue("rule", jsonString)
-  }, [fieldValues, form])
+  }
 
   return (
     <div className="space-y-4 border rounded-lg p-4 bg-muted/30">
@@ -162,10 +129,7 @@ export function TemplateFields({ form, template }: TemplateFieldsProps) {
               {isVariableSupported(field) && (
                 <FunctionSelector
                   onSelect={(value) => {
-                    setFieldValues(prev => ({
-                      ...prev,
-                      [field.key]: (prev[field.key] || "") + value
-                    }))
+                    changeField(field.key, formatTemplateValue(getTemplateFieldValue(rule, field.key)) + value)
                   }}
                 />
               )}
@@ -173,12 +137,9 @@ export function TemplateFields({ form, template }: TemplateFieldsProps) {
             <FormControl>
               <FieldComponent
                 field={field}
-                value={fieldValues[field.key]}
+                value={getTemplateFieldValue(rule, field.key)}
                 onChange={(value) => {
-                  setFieldValues(prev => ({
-                    ...prev,
-                    [field.key]: value
-                  }))
+                  changeField(field.key, value)
                 }}
               />
             </FormControl>
@@ -213,10 +174,7 @@ export function TemplateFields({ form, template }: TemplateFieldsProps) {
                     {isVariableSupported(field) && (
                       <FunctionSelector
                         onSelect={(value) => {
-                          setFieldValues(prev => ({
-                            ...prev,
-                            [field.key]: (prev[field.key] || "") + value
-                          }))
+                          changeField(field.key, formatTemplateValue(getTemplateFieldValue(rule, field.key)) + value)
                         }}
                       />
                     )}
@@ -224,12 +182,9 @@ export function TemplateFields({ form, template }: TemplateFieldsProps) {
                   <FormControl>
                     <FieldComponent
                       field={field}
-                      value={fieldValues[field.key]}
+                      value={getTemplateFieldValue(rule, field.key)}
                       onChange={(value) => {
-                        setFieldValues(prev => ({
-                          ...prev,
-                          [field.key]: value
-                        }))
+                        changeField(field.key, value)
                       }}
                     />
                   </FormControl>
@@ -241,4 +196,4 @@ export function TemplateFields({ form, template }: TemplateFieldsProps) {
       )}
     </div>
   )
-} 
+}

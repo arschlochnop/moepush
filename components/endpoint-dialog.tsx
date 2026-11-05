@@ -38,6 +38,7 @@ import { Channel, ChannelType } from "@/lib/channels"
 import { CHANNEL_TEMPLATES } from "@/lib/channels"
 import { TemplateFields } from "@/components/template-fields"
 import { createEndpoint, updateEndpoint } from "@/lib/services/endpoints"
+import { inferEndpointTemplate, parseEndpointRule, restoreStructuredFields, selectEndpointTemplate } from "@/lib/endpoint-template"
 
 interface EndpointDialogProps {
   mode?: "create" | "edit"
@@ -55,11 +56,11 @@ const getInitialChannelType = (channels: Channel[], endpoint?: Endpoint) => {
   }
 }
 
-const getInitialTemplateType = (endpoint?: Endpoint) => {
-  if (endpoint) {
-    const rule = JSON.parse(endpoint.rule || "{}")
-    return rule.msgtype || rule.parse_mode
-  }
+const getInitialTemplateType = (channels: Channel[], endpoint?: Endpoint) => {
+  const channelType = getInitialChannelType(channels, endpoint)
+  return endpoint && channelType
+    ? inferEndpointTemplate(endpoint.rule, CHANNEL_TEMPLATES[channelType])
+    : undefined
 }
 
 export function EndpointDialog({ 
@@ -75,8 +76,9 @@ export function EndpointDialog({
     getInitialChannelType(channels, endpoint)
   )
   const [selectedTemplateType, setSelectedTemplateType] = useState<string | undefined>(
-    getInitialTemplateType(endpoint)
+    getInitialTemplateType(channels, endpoint)
   )
+  const [showRawRule, setShowRawRule] = useState(false)
   const { toast } = useToast()
 
   const form = useForm<NewEndpoint>({
@@ -91,24 +93,36 @@ export function EndpointDialog({
   const templates = selectedChannelType ? CHANNEL_TEMPLATES[selectedChannelType] : []
   const template = templates.find(t => t.type === selectedTemplateType)
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (nextOpen) {
+      form.reset({ name: endpoint?.name ?? "", channelId: endpoint?.channelId ?? "", rule: endpoint?.rule ?? "" })
+      setSelectedChannelType(getInitialChannelType(channels, endpoint))
+      setSelectedTemplateType(getInitialTemplateType(channels, endpoint))
+      setShowRawRule(false)
+    }
+    setOpen(nextOpen)
+  }
+
   async function onSubmit(data: NewEndpoint) {
     try {
+      parseEndpointRule(data.rule)
+      const rule = showRawRule ? data.rule : restoreStructuredFields(data.rule, endpoint?.rule ?? "{}", template)
+      const payload = { ...data, rule }
       setIsPending(true)
       if (mode === "edit" && endpoint) {
-        await updateEndpoint(endpoint.id, data)
+        await updateEndpoint(endpoint.id, payload)
         toast({ description: "接口已更新" })
       } else {
-        await createEndpoint(data)
+        await createEndpoint(payload)
         toast({ description: "接口已创建" })
       }
       setOpen(false)
-      form.reset()
       onSuccess?.()
     } catch (error) {
       console.error('Endpoint dialog error:', error)
       toast({
         variant: "destructive",
-        description: mode === "edit" ? "更新失败，请重试" : "创建失败，请重试" 
+        description: error instanceof SyntaxError ? "消息规则必须是有效的 JSON" : error instanceof Error ? error.message : "保存失败，请重试"
       })
     } finally {
       setIsPending(false)
@@ -116,7 +130,7 @@ export function EndpointDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {mode === "edit" ? (
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -173,6 +187,10 @@ export function EndpointDialog({
                           field.onChange(value)
                           const channel = channels.find(c => c.id === value)
                           setSelectedChannelType(channel?.type)
+                          if (channel?.type !== selectedChannelType) {
+                            setSelectedTemplateType(undefined)
+                            setShowRawRule(false)
+                          }
                         }}
                         value={field.value}
                       >
@@ -207,9 +225,17 @@ export function EndpointDialog({
                         </FormLabel>
                         <Select
                           onValueChange={(value) => {
-                            setSelectedTemplateType(value)
+                            const nextTemplate = templates.find(candidate => candidate.type === value)
+                            if (!nextTemplate) return
+                            try {
+                              field.onChange(selectEndpointTemplate(field.value, nextTemplate, template))
+                              setSelectedTemplateType(value)
+                              setShowRawRule(false)
+                            } catch (error) {
+                              toast({ variant: "destructive", description: error instanceof Error ? error.message : "切换消息类型失败" })
+                            }
                           }}
-                          value={selectedTemplateType}
+                          value={selectedTemplateType ?? ""}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -229,15 +255,25 @@ export function EndpointDialog({
                             {template.description}
                           </p>
                         )}
-                        {template ? (
-                          <TemplateFields form={form} template={template} />
+                        {template && (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => setShowRawRule(value => !value)}>
+                            {showRawRule ? "使用表单编辑" : "编辑完整 JSON"}
+                          </Button>
+                        )}
+                        {template && !showRawRule ? (
+                          <TemplateFields key={`${selectedChannelType}:${selectedTemplateType}`} form={form} template={template} />
                         ) : (
                           <FormControl>
                             <Textarea 
-                              placeholder="请先选择消息类型"
-                              className="font-mono resize-none h-32"
-                              disabled
+                              aria-label="完整消息规则 JSON"
+                              placeholder="选择消息类型，或直接编辑完整 JSON 配置"
+                              className="font-mono resize-none min-h-48"
                               {...field} 
+                              onChange={(event) => {
+                                field.onChange(event)
+                                setSelectedTemplateType(inferEndpointTemplate(event.target.value, templates))
+                                setShowRawRule(true)
+                              }}
                             />
                           </FormControl>
                         )}
@@ -275,4 +311,4 @@ export function EndpointDialog({
       </DialogContent>
     </Dialog>
   )
-} 
+}

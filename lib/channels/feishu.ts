@@ -2,7 +2,7 @@ import { BaseChannel, ChannelConfig, SendMessageOptions } from "./base"
 
 interface FeishuMessage {
   msg_type: "text" | "post" | "interactive"
-  content: {
+  content?: {
     text?: string
     post?: {
       zh_cn: {
@@ -16,6 +16,7 @@ interface FeishuMessage {
     }
     card?: any
   }
+  card?: any
   timestamp?: string
   sign?: string
 }
@@ -154,7 +155,7 @@ export class FeishuChannel extends BaseChannel {
     }
 
     // 处理富文本消息的内容格式
-    if (message.msg_type === "post" && typeof message.content.post?.zh_cn.content === 'string') {
+    if (message.msg_type === "post" && typeof message.content?.post?.zh_cn.content === 'string') {
       try {
         message.content.post.zh_cn.content = JSON.parse(message.content.post.zh_cn.content as any);
       } catch {
@@ -163,11 +164,20 @@ export class FeishuChannel extends BaseChannel {
     }
     
     // 处理交互式卡片消息的内容格式
-    if (message.msg_type === "interactive" && typeof message.content.card === 'string') {
+    if (message.msg_type === "interactive") {
+      // 兼容两种已保存的卡片路径，发送时统一使用飞书要求的顶层 card。
+      const card = message.card ?? message.content?.card
       try {
-        message.content.card = JSON.parse(message.content.card);
+        message.card = typeof card === "string" ? JSON.parse(card) : card
       } catch {
-        throw new Error("交互式卡片内容格式不正确，请提供有效的JSON格式");
+        throw new Error("交互式卡片内容格式不正确，请提供有效的JSON格式")
+      }
+      if (!message.card || typeof message.card !== "object" || Array.isArray(message.card)) {
+        throw new Error("交互式卡片内容必须是 JSON 对象")
+      }
+      if (message.content?.card !== undefined) {
+        delete message.content.card
+        if (Object.keys(message.content).length === 0) delete message.content
       }
     }
 
@@ -195,4 +205,4 @@ export class FeishuChannel extends BaseChannel {
 
     return response
   }
-} 
+}
