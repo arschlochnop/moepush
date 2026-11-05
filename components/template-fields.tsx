@@ -44,7 +44,6 @@ function FieldComponent({
           value={formatTemplateValue(value)}
           onChange={(e) => onChange(e.target.value)}
           placeholder={field.placeholder || `请输入${field.description}`}
-          className="resize-none"
         />
       )
     case 'checkbox':
