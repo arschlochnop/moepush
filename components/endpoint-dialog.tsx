@@ -267,7 +267,8 @@ export function EndpointDialog({
                             <Textarea 
                               aria-label="完整消息规则 JSON"
                               placeholder="选择消息类型，或直接编辑完整 JSON 配置"
-                              className="font-mono resize-none min-h-48"
+                              rows={8}
+                              className="font-mono min-h-48"
                               {...field} 
                               onChange={(event) => {
                                 field.onChange(event)
@@ -283,7 +284,7 @@ export function EndpointDialog({
                       <FormControl>
                         <Textarea 
                           placeholder="请先选择推送渠道"
-                          className="font-mono resize-none h-32"
+                          className="font-mono"
                           disabled
                           {...field} 
                         />
